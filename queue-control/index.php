@@ -1,9 +1,7 @@
 <?php
 include '../config/db.php';
 
-/* =========================
-   CURRENT SERVING
-========================= */
+// current serving
 $current = $conn->query("
     SELECT * FROM queue 
     WHERE status='serving' 
@@ -11,19 +9,15 @@ $current = $conn->query("
     LIMIT 1
 ")->fetch_assoc();
 
-/* =========================
-   COUNTS
-========================= */
+// counts
 $waiting = $conn->query("SELECT COUNT(*) as total FROM queue WHERE status='waiting'")->fetch_assoc();
 $done = $conn->query("SELECT COUNT(*) as total FROM queue WHERE status='done'")->fetch_assoc();
 $total = $conn->query("SELECT COUNT(*) as total FROM queue")->fetch_assoc();
 
-/* =========================
-   QUEUE LIST (ALL NUMBERS)
-========================= */
+// queue list
 $allQueue = $conn->query("
     SELECT * FROM queue 
-    ORDER BY priority_number ASC
+    ORDER BY CAST(priority_number AS UNSIGNED) ASC
 ");
 ?>
 
@@ -37,147 +31,184 @@ $allQueue = $conn->query("
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
 }
 
-body {
-    background: radial-gradient(circle at top, #0f172a, #020617);
-    color: #fff;
+body{
+    background:#f4f6f9;
+    color:#333;
 }
 
-/* TOPBAR */
-.topbar {
-    background: rgba(255,255,255,0.03);
-    backdrop-filter: blur(12px);
-    padding: 18px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+.topbar{
+    background:#17321A;
+    color:#fff;
+    padding:15px 25px;
+}
+
+.topbar h1{
+    font-size:24px;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
 }
 
 /* STATS */
-.container {
-    max-width: 1200px;
-    margin: auto;
-    padding: 30px;
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:20px;
 }
 
-.stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
-    margin-bottom: 25px;
+.card{
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:20px;
+    text-align:center;
 }
 
-.card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    padding: 22px;
-    border-radius: 18px;
+.card h2{
+    font-size:32px;
+    margin-bottom:5px;
+    color:#2563eb;
 }
 
 /* MAIN */
-.main {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 25px;
+.main{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
 }
 
-/* SERVING */
-.serving {
-    background: linear-gradient(135deg, #16a34a, #14532d);
-    border-radius: 28px;
-    padding: 70px 40px;
-    text-align: center;
+/* NOW SERVING */
+.serving{
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:60px;
+    text-align:center;
 }
 
-.serving h1 {
-    font-size: 100px;
-    font-weight: 900;
+.serving small{
+    display:block;
+    font-size:18px;
+    margin-bottom:10px;
+    color:#666;
+}
+
+.serving h1{
+    font-size:120px;
+    color:#16a34a;
+    font-weight:800;
 }
 
 /* ACTIONS */
-.actions {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.actions{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
 }
 
-.btn {
-    padding: 16px;
-    border: none;
-    border-radius: 14px;
-    font-weight: 700;
-    cursor: pointer;
+.btn{
+    padding:14px;
+    border:none;
+    border-radius:6px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
 }
 
-/* COLORS */
-.next { background: #2563eb; color: white; }
-.skip { background: #dc2626; color: white; }
-.back { background: #f59e0b; color: black; }
-
-/* =========================
-   QUEUE LIST (NEW)
-========================= */
-.queue-panel {
-    margin-top: 20px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 12px;
+.next{
+    background:#2563eb;
+    color:white;
 }
 
-.queue-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    max-height: 260px;
-    overflow-y: auto;
-    padding: 10px;
+.skip{
+    background:#dc2626;
+    color:white;
 }
 
-/* DEFAULT */
-.q-item {
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.06);
-    transition: 0.2s;
+.back{
+    background:#f59e0b;
+    color:white;
 }
 
-.q-item:hover {
-    transform: scale(1.05);
+/* QUEUE LIST */
+.queue-panel{
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:15px;
+}
+
+.queue-panel h4{
+    margin-bottom:10px;
+    color:#555;
+}
+
+.queue-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    max-height:300px;
+    overflow-y:auto;
+}
+
+.q-item{
+    min-width:60px;
+    text-align:center;
+    padding:10px;
+    border-radius:5px;
+    font-weight:600;
+    border:1px solid #ddd;
 }
 
 /* STATUS COLORS */
-.done {
-    background: rgba(34,197,94,0.25);
-    border-color: #22c55e;
-    color: #22c55e;
+.waiting{
+    background:#f1f5f9;
+    color:#333;
 }
 
-.waiting {
-    background: rgba(255,255,255,0.06);
-    color: #fff;
+.done{
+    background:#dcfce7;
+    color:#166534;
+    border-color:#22c55e;
 }
 
-.serving-status {
-    background: rgba(59,130,246,0.25);
-    border-color: #3b82f6;
-    color: #3b82f6;
+.serving-status{
+    background:#dbeafe;
+    color:#1d4ed8;
+    border-color:#3b82f6;
 }
 
-.skipped {
-    background: rgba(239,68,68,0.25);
-    border-color: #ef4444;
-    color: #ef4444;
+.skipped{
+    background:#fee2e2;
+    color:#b91c1c;
+    border-color:#ef4444;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .main{
+        grid-template-columns:1fr;
+    }
+
+    .serving h1{
+        font-size:80px;
+    }
 }
 </style>
 </head>
@@ -215,7 +246,6 @@ body {
 
     </div>
 
-    <!-- MAIN -->
     <div class="main">
 
         <div class="serving">
@@ -226,7 +256,6 @@ body {
         <div class="actions">
 
             <button class="btn next" onclick="nextQueue()">NEXT</button>
-            <button class="btn skip">SKIP</button>
             <button class="btn back" onclick="backQueue()">BACK</button>
 
             <!-- QUEUE LIST -->

@@ -1,16 +1,10 @@
 <?php
 include 'config/db.php';
 
-/* =========================
-   CHECK DB CONNECTION
-========================= */
 if (!$conn) {
     die("Database connection failed");
 }
 
-/* =========================
-   GET CURRENT SERVING
-========================= */
 $currentResult = $conn->query("
     SELECT * FROM queue 
     WHERE status='serving' 
@@ -23,13 +17,10 @@ if ($currentResult && $currentResult->num_rows > 0) {
     $current = $currentResult->fetch_assoc();
 }
 
-/* =========================
-   GET NEXT QUEUE
-========================= */
 $nextResult = $conn->query("
     SELECT * FROM queue 
     WHERE status='waiting' 
-    ORDER BY priority_number ASC 
+    ORDER BY CAST(priority_number AS UNSIGNED) ASC 
     LIMIT 6
 ");
 ?>
@@ -39,7 +30,7 @@ $nextResult = $conn->query("
 <head>
 <title>Queue Display</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 
 <style>
 body {
@@ -53,106 +44,82 @@ body {
     align-items: center;
 }
 
+/* main container */
 .container {
-    width: 95%;
-    max-width: 1300px;
+    width: 98%;
+    max-width: 1600px;
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 25px;
+    gap: 40px;
 }
 
-/* LEFT */
+/* left */
 .card {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 25px;
-    padding: 70px 40px;
+    border-radius: 30px;
+    padding: 100px 60px;
     text-align: center;
     backdrop-filter: blur(14px);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.35);
-    position: relative;
-    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.45);
 }
 
 .card h3 {
-    letter-spacing: 4px;
-    font-size: 18px;
-    opacity: 0.85;
+    letter-spacing: 6px;
+    font-size: 28px;
+    opacity: 0.9;
 }
 
-/* =========================
-   NOW SERVING NUMBER (ENHANCED)
-========================= */
+/* big number */
 .number {
-    font-size: 180px;
-    font-weight: 800;
-    margin: 10px 0;
-    text-shadow: 0 10px 40px rgba(0,0,0,0.4);
-
-    /* NEW EFFECTS */
+    font-size: 260px;
+    font-weight: 900;
+    margin: 20px 0;
+    text-shadow: 0 15px 60px rgba(0,0,0,0.6);
     animation: pulseNumber 1.8s infinite ease-in-out;
     position: relative;
 }
 
-/* glow layer */
-.number::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 60%);
-    filter: blur(20px);
-    z-index: -1;
-    animation: glowMove 3s infinite linear;
-}
-
-/* breathing animation */
 @keyframes pulseNumber {
-    0% { transform: scale(1); text-shadow: 0 10px 40px rgba(0,0,0,0.4); }
-    50% { transform: scale(1.05); text-shadow: 0 15px 60px rgba(0,0,0,0.6); }
-    100% { transform: scale(1); text-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+    0% { transform: scale(1); }
+    50% { transform: scale(1.07); }
+    100% { transform: scale(1); }
 }
 
-/* moving glow */
-@keyframes glowMove {
-    0% { transform: translateY(-10px); opacity: 0.4; }
-    50% { transform: translateY(10px); opacity: 0.7; }
-    100% { transform: translateY(-10px); opacity: 0.4; }
-}
-
-.card p {
-    opacity: 0.85;
-    font-size: 16px;
-}
-
-/* RIGHT */
+/* right side */
 .right {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 18px;
 }
 
 .right h3 {
-    margin-bottom: 10px;
-    letter-spacing: 4px;
-    font-size: 16px;
+    margin-bottom: 15px;
+    letter-spacing: 6px;
+    font-size: 22px;
     opacity: 0.9;
 }
 
-/* UP NEXT */
+
 .queue-item {
     background: rgba(255,255,255,0.10);
     border: 1px solid rgba(255,255,255,0.15);
-    padding: 16px;
-    border-radius: 14px;
+    padding: 22px;
+    border-radius: 16px;
     text-align: center;
-    font-size: 22px;
-    font-weight: 600;
-    transition: 0.25s ease;
-    animation: fadeUp 0.5s ease forwards;
+    font-size: 28px;
+    font-weight: 700;
+
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(25px) scale(0.95);
+    animation: slideUp 0.6s ease forwards;
+
+    transition: 0.25s ease;
+    position: relative;
+    overflow: hidden;
 }
 
+/* stagger animation */
 .queue-item:nth-child(1) { animation-delay: 0.05s; }
 .queue-item:nth-child(2) { animation-delay: 0.10s; }
 .queue-item:nth-child(3) { animation-delay: 0.15s; }
@@ -160,22 +127,47 @@ body {
 .queue-item:nth-child(5) { animation-delay: 0.25s; }
 .queue-item:nth-child(6) { animation-delay: 0.30s; }
 
+/* slide in effect */
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* hover glow */
 .queue-item:hover {
-    transform: scale(1.06);
-    background: rgba(255,255,255,0.18);
+    transform: scale(1.08);
+    background: rgba(255,255,255,0.22);
     box-shadow: 0 0 25px rgba(255,255,255,0.25);
 }
 
+/* next in line (first item)*/
 .queue-item:first-child {
-    border: 2px solid rgba(255,255,255,0.4);
-    background: rgba(255,255,255,0.16);
+    border: 2px solid rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.18);
+    animation: pulseGlow 2s infinite;
 }
 
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+/* glowing pulse for next queue */
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 10px rgba(255,255,255,0.15); }
+    50% { box-shadow: 0 0 30px rgba(255,255,255,0.45); }
+    100% { box-shadow: 0 0 10px rgba(255,255,255,0.15); }
 }
 
+/* subtle floating movement */
+.queue-item:first-child {
+    animation: pulseGlow 2s infinite, floatMove 3s ease-in-out infinite;
+}
+
+@keyframes floatMove {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-4px); }
+    100% { transform: translateY(0px); }
+}
+
+/* MOBILE */
 @media (max-width: 900px) {
     .container {
         grid-template-columns: 1fr;
@@ -183,7 +175,11 @@ body {
     }
 
     .number {
-        font-size: 120px;
+        font-size: 160px;
+    }
+
+    .card {
+        padding: 60px 30px;
     }
 }
 </style>
@@ -193,7 +189,7 @@ body {
 
 <div class="container">
 
-    <!-- LEFT -->
+    <!-- left -->
     <div class="card">
 
         <h3>NOW SERVING</h3>
@@ -206,7 +202,7 @@ body {
 
     </div>
 
-    <!-- RIGHT -->
+    <!-- right -->
     <div class="right">
 
         <h3>UP NEXT</h3>
